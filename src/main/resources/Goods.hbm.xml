@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="entity">
+
+    <class name="entity.Goods" table="SCOTT.GOODS" dynamic-insert="true" dynamic-update="true" >
+        <id name="Gno" column="Gno">
+            <generator class="increment">
+                <!--<param name="sequence">GOODS_ID</param>-->
+            </generator>
+        </id>
+        <property name="gname" column="gname"/>
+        <property name="gtype" column="gtype"/>
+        <property name="Gnumber" column="Gnumber"/>
+        <property name="Gcompany" column="Gcompany"/>
+        <property name="Gcreatetime" column="Gcreatetime"/>
+        <property name="uintime" column="uintime"/>
+    </class>
+</hibernate-mapping>

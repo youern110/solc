@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/tx
+       http://www.springframework.org/schema/tx/spring-tx.xsd
+       http://www.springframework.org/schema/aop
+       http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <context:property-placeholder location="classpath:db.properties" local-override="true"/>
+    <bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
+        <property name="url" value="${url}"></property>
+        <property name="driverClassName" value="${driverclass}"></property>
+        <property name="username" value="${username}"></property>
+        <property name="password" value="${password}"></property>
+        
+        <!--<property name="initialSize" value="5"></property>
+        <property name="maxIdle" value="10"></property>
+        <property name="maxTotal" value="10"></property>-->
+    </bean>
+
+    <bean id="sessionFactory" class="org.springframework.orm.hibernate5.LocalSessionFactoryBean" destroy-method="destroy">
+        <property name="dataSource" ref="dataSource"></property>
+        <property name="mappingLocations">
+            <list>
+                <value>classpath:Goods.hbm.xml</value>
+            </list>
+        </property>
+        <property name="hibernateProperties">
+            <props>
+                <prop key="hibernate.show_sql">true</prop>
+                <prop key="hibernate.format_sql">true</prop>
+                <prop key="hibernate.dialect">org.hibernate.dialect.Oracle12cDialect</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="GoodsDao" class="dao.GoodsDao">
+        <property name="sessionFactory" ref="sessionFactory"/>
+    </bean>
+
+    <bean id="transactionManager" class="org.springframework.orm.hibernate5.HibernateTransactionManager">
+        <property name="sessionFactory" ref="sessionFactory"/>
+    </bean>
+
+    <tx:advice id="transactionInterceptor" transaction-manager="transactionManager">
+        <tx:attributes>
+            <tx:method name="get*" read-only="true"/>
+            <tx:method name="delete*"/>
+            <tx:method name="update*"/>
+            <tx:method name="add*"/>
+        </tx:attributes>
+    </tx:advice>
+
+    <aop:config>
+        <aop:pointcut id="allServices"
+                      expression="execution(public * service.*.*(..))"/>
+        <aop:advisor advice-ref="transactionInterceptor" pointcut-ref="allServices"/>
+    </aop:config>
+
+    <bean id="goodsService" class="service.GoodsService">
+        <property name="goodsDao" ref="GoodsDao"/>
+    </bean>
+
+    <bean id="goods" class="entity.Goods"/>
+
+    <bean id="controller" class="controller.GoodsController">
+        <property name="goodsService" ref="goodsService"/>
+        <property name="goods" ref="goods"/>
+    </bean>
+
+
+</beans>
